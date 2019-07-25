@@ -5,16 +5,11 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import org.objenesis.Objenesis;
 import org.objenesis.ObjenesisStd;
 import rpc.*;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RpcServer {
@@ -42,8 +37,7 @@ public class RpcServer {
                         @Override
                         public void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline p = ch.pipeline();
-//                            p.addLast("decoder", new ObjectDecoder(ClassResolvers.cacheDisabled(RpcRequest.class.getClassLoader())));
-//                            p.addLast("encoder", new ObjectEncoder());
+                            p.addLast(new LengthFieldBasedFrameDecoder(1024 * 1024, 0, 4));
                             p.addLast(new RpcDecoder(RpcRequest.class));
                             p.addLast(new RpcEncoder(RpcResponse.class));
                             p.addLast(new RpcServerHandler(serviceMap));

@@ -8,6 +8,7 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
@@ -54,7 +55,6 @@ public class ConnectManager {
     }
 
     public void connect(int port) throws InterruptedException, IOException {
-//        threadPoolExecutor.submit(() -> {
         var group = new NioEventLoopGroup();
         var b = new Bootstrap();
         b.group(group)
@@ -64,8 +64,7 @@ public class ConnectManager {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         final var p = ch.pipeline();
-//                        p.addLast("decoder", new ObjectDecoder(ClassResolvers.cacheDisabled(RpcResponse.class.getClassLoader())));
-//                        p.addLast("encoder", new ObjectEncoder());
+                        p.addLast(new LengthFieldBasedFrameDecoder(1024 * 1024, 0, 4));
                         p.addLast(new RpcDecoder(RpcResponse.class));
                         p.addLast(new RpcEncoder(RpcRequest.class));
                         p.addLast(new RpcClientHandler());
